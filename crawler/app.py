@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import streamlit as st
 import time
 import csv
@@ -424,5 +423,4 @@ with col2:
                 filename = f"kgmobile_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
                 st.download_button(label="📥 엑셀(CSV) 다운로드", data=csv_file, file_name=filename, mime="text/csv", use_container_width=True)
             else:
->>>>>>> 753bb5b643b49b0a22315f0b2975500e9ef8fd46
                 st.error("데이터를 불러오지 못했습니다.")
