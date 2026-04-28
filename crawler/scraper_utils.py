@@ -18,10 +18,14 @@ def get_driver():
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-gpu') # 리눅스 서버 필수 옵션
+    options.add_argument('--remote-debugging-port=9222') # 리눅스 서버 필수 옵션
     options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
-    options.add_argument("--disable-blink-features=AutomationControlled")
+    
+    # 핵심: Streamlit Cloud(리눅스)의 크롬 설치 경로를 명시
+    options.binary_location = '/usr/bin/chromium' 
+    
     driver = webdriver.Chrome(options=options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     return driver
 
 def clean_numeric(text):
