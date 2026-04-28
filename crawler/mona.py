@@ -6,6 +6,7 @@ import csv
 import re
 import os
 from datetime import datetime
+from scraper_utils import get_driver, clean_numeric, save_csv, calculate_data, get_filename
 
 # --- 설정 및 도구 함수 ---
 def get_driver():
