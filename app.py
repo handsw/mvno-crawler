@@ -22,38 +22,39 @@ def get_csv_download_button(data, filename_prefix):
 # 3열 구성
 col1, col2, col3 = st.columns(3)
 
-# 1. 유모바일
+# 유모바일 섹션
 with col1:
     with st.container(border=True):
         st.subheader("🟣 유모바일")
-        if st.button("크롤링 시작", key="btn1", use_container_width=True):
-            with st.spinner('유모바일 데이터를 수집 중입니다...'):
+        if st.button("크롤링 시작", key="btn_umobile"): # key 변경
+            with st.spinner('수집 중...'):
                 data = umobile.run_umobile()
                 if data:
-                    st.success(f"{len(data)}개 요금제 발견!")
+                    st.success(f"{len(data)}개 발견!")
+                    # 다운로드 버튼에도 key를 명확히 부여
                     get_csv_download_button(data, "umobile")
                 else: st.error("실패")
 
-# 2. KG모바일
+# KG모바일 섹션
 with col2:
     with st.container(border=True):
         st.subheader("🔵 KG모바일")
-        if st.button("크롤링 시작", key="btn2", use_container_width=True):
-            with st.spinner('KG모바일 데이터를 수집 중입니다...'):
+        if st.button("크롤링 시작", key="btn_kg"): # key 변경
+            with st.spinner('수집 중...'):
                 data = kgmobile.run_kgmobile()
                 if data:
-                    st.success(f"{len(data)}개 요금제 발견!")
+                    st.success(f"{len(data)}개 발견!")
                     get_csv_download_button(data, "kgmobile")
                 else: st.error("실패")
 
-# 3. 모나
+# 모나 섹션
 with col3:
     with st.container(border=True):
         st.subheader("🟡 모나(Mona)")
-        if st.button("크롤링 시작", key="btn3", use_container_width=True):
-            with st.spinner('모나 데이터를 수집 중입니다...'):
+        if st.button("크롤링 시작", key="btn_mona"): # key 변경
+            with st.spinner('수집 중...'):
                 data = mona.run_mona()
                 if data:
-                    st.success(f"{len(data)}개 요금제 발견!")
+                    st.success(f"{len(data)}개 발견!")
                     get_csv_download_button(data, "mona")
                 else: st.error("실패")
