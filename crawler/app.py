@@ -210,6 +210,7 @@ with col2:
                 filename = f"kgmobile_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
                 st.download_button(label="📥 엑셀(CSV) 다운로드", data=csv_file, file_name=filename, mime="text/csv", use_container_width=True)
             else:
+                st.write("데이터가 없습니다.")  # 이렇게 들여쓰기가 되어 있어야 함!
 =======
 import streamlit as st
 import time
