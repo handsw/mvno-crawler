@@ -51,10 +51,14 @@ with col2:
 with col3:
     with st.container(border=True):
         st.subheader("🟡 모나(Mona)")
-        if st.button("크롤링 시작", key="btn_mona"): # key 변경
+        if st.button("크롤링 시작", key="btn_mona"):
             with st.spinner('수집 중...'):
-                data = mona.run_mona()
-                if data:
-                    st.success(f"{len(data)}개 발견!")
+                data, error = mona.run_mona() # 함수가 이제 2개를 줍니다
+                
+                if error:
+                    st.error(f"실패: {error}")
+                elif data:
+                    st.success(f"{len(data)}개 요금제 발견!")
                     get_csv_download_button(data, "mona")
-                else: st.error("제작자에게 문의하세요")
+                else:
+                    st.warning("데이터를 하나도 찾지 못했습니다.")

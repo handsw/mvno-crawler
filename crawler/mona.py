@@ -7,28 +7,27 @@ from selenium.webdriver.support import expected_conditions as EC
 from crawler.scraper_utils import get_driver, clean_numeric, calculate_data
 
 def run_mona():
-    """모나 크롤링 메인 함수"""
     driver = get_driver()
     result_data = []
     error_msg = ""
     
     try:
-        driver.set_page_load_timeout(30)
-        driver.set_window_size(1920, 1080)
-        
         driver.get("https://mobilemona.co.kr/view/plan/rate_plan.aspx")
         
-        # 1. 페이지가 로딩될 때까지 대기
+        # 20초 동안 기다리기
         wait = WebDriverWait(driver, 20)
         wait.until(EC.presence_of_element_located((By.CLASS_NAME, "pb-plan-item")))
         
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         cards = soup.select('.pb-plan-item')
         
+        # 디버깅: 몇 개가 발견되었는지 터미널/로그에 출력
+        print(f"DEBUG: 발견된 카드 개수: {len(cards)}")
+        
         if not cards:
-            return [], "데이터를 찾을 수 없음 (페이지 구조 변경 또는 로딩 실패)"
+            return [], "데이터를 찾을 수 없습니다. 페이지가 로딩되지 않았거나 사이트 구조가 바뀌었습니다."
 
-        for card in cards:
+        for i, card in enumerate(cards):
             try:
                 name = card.select_one('.pb-plan-item_name').text.strip()
                 net_type = card.select_one('.netdiv').text.strip() if card.select_one('.netdiv') else "LTE"
@@ -50,23 +49,14 @@ def run_mona():
                 voice = clean_numeric(card.select_one('.pb-plan-data_name.voice').text.strip() if card.select_one('.pb-plan-data_name.voice') else "기본제공")
                 letter = clean_numeric(card.select_one('.pb-plan-data_name.letter').text.strip() if card.select_one('.pb-plan-data_name.letter') else "기본제공")
                 
-                result_data.append([
-                    'LG', net_type, name, price, period, orig_price, data_final, qos, voice, letter
-                ])
+                result_data.append(['LG', net_type, name, price, period, orig_price, data_final, qos, voice, letter])
             except Exception as e:
+                print(f"DEBUG: {i}번째 카드 파싱 에러: {e}")
                 continue
                 
     except Exception as e:
-        error_msg = str(e)
+        error_msg = f"접속/로딩 에러: {str(e)}"
     finally:
         driver.quit()
         
     return result_data, error_msg
-
-# 로컬에서 테스트할 때만 실행
-if __name__ == "__main__":
-    data, err = run_mona()
-    if err:
-        print(f"오류 발생: {err}")
-    elif data:
-        print(f"{len(data)}개 데이터 수집 완료")
