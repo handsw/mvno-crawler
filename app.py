@@ -7,6 +7,7 @@ from crawler import mona, umobile, kgmobile
 
 # 페이지 설정
 st.set_page_config(page_title="MVNO 요금제 수집기", layout="wide")
+col1, col2 = st.columns([3, 1]) # 왼쪽을 넓게, 오른쪽을 좁게 3:1 비율로 나눔
 with col1:
     st.title("타사 MVNO 요금제 수집")
 
