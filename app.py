@@ -58,15 +58,22 @@ with col3:
         
         # 2. 데이터 파일 읽기 (로컬에서 업로드한 mona.csv)
         try:
-            import pandas as pd
-            df = pd.read_csv('mona.csv')
+            file_path = 'mona.csv'
             
-            # (선택) 마지막 업데이트 날짜 표시
-            st.caption("마지막 업데이트: 2026-04-28 (예시)")
+            # 1. 파일 수정 시간 자동 가져오기
+            mtime = os.path.getmtime(file_path) # 파일 수정 시간(Unix timestamp) 확인
+            last_updated = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M') # 읽기 좋게 변환
             
-            st.dataframe(df, use_container_width=True)
+            st.caption(f"마지막 업데이트: {last_updated}")
             
-            with open('mona.csv', 'rb') as f:
-                st.download_button("📥 데이터 다운로드", f, "mona.csv", mime="text/csv", use_container_width=True)
+            # 2. 미리보기(st.dataframe) 코드 삭제 후 다운로드 버튼만 유지
+            with open(file_path, 'rb') as f:
+                st.download_button(
+                    label="📥 최신 데이터 다운로드", 
+                    data=f, 
+                    file_name="mona.csv", 
+                    mime="text/csv", 
+                    use_container_width=True
+                )
         except FileNotFoundError:
             st.error("데이터 파일이 준비되지 않았습니다.")
