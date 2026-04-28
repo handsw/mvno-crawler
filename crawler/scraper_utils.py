@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 HEADERS = ["통신망", "데이터구분", "요금제명", "가격", "할인기간", "할인후가격", "데이터(GB)", "QoS(Mbps)", "통화(분)", "문자(건)"]
 
@@ -18,14 +20,13 @@ def get_driver():
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-gpu') # 리눅스 서버 필수 옵션
-    options.add_argument('--remote-debugging-port=9222') # 리눅스 서버 필수 옵션
+    # 서버용 추가 옵션
+    options.add_argument('--disable-gpu')
     options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
     
-    # 핵심: Streamlit Cloud(리눅스)의 크롬 설치 경로를 명시
-    options.binary_location = '/usr/bin/chromium' 
-    
-    driver = webdriver.Chrome(options=options)
+    # [핵심] 자동으로 서버 환경에 맞는 드라이버를 설치합니다.
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 def clean_numeric(text):
