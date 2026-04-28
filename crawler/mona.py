@@ -1,74 +1,35 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
 import time
-import csv
 import re
-import os
-from datetime import datetime
-from crawler.scraper_utils import get_driver, clean_numeric, save_csv, calculate_data, get_filename
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from crawler.scraper_utils import get_driver, clean_numeric, calculate_data
 
-# --- 설정 및 도구 함수 ---
-def get_driver():
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    driver = webdriver.Chrome(options=options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
-    return driver
-
-def calculate_data(text):
-    norm_text = text.replace('매일', '일')
-    norm_text = re.sub(r'일\s*(\d+)\s*G[Bb]?', r'일 \1GB', norm_text)
-    is_complex = ('+' in norm_text) or ('일' in norm_text)
-    
-    daily_match = re.search(r'일\s*(\d+)GB', norm_text)
-    daily_val = int(daily_match.group(1)) * 30 if daily_match else 0
-    calc_text = re.sub(r'일\s*\d+GB', '', norm_text) if daily_match else norm_text
-    
-    bases = re.findall(r'(\d+(?:\.\d+)?)GB', calc_text)
-    base_val = sum(float(b) for b in bases)
-    
-    total = base_val + daily_val
-    total_str = f"{total:g}" 
-    
-    return total_str if not is_complex else f"{total_str}({norm_text.strip()})"
-
-def clean_numeric(text):
-    text = re.sub(r'\(.*\)', '', text).strip()
-    if any(char.isdigit() for char in text): return "".join(filter(str.isdigit, text))
-    return text
-
-# --- 메인 로직 ---
 def run_mona():
+    """모나 크롤링 메인 함수"""
     driver = get_driver()
     result_data = []
-    
-    # 1. 사이트 접속을 더 튼튼하게 만들기 위한 설정
-    driver.set_page_load_timeout(30) # 30초 내에 안 뜨면 오류 발생하게 함
-    driver.set_window_size(1920, 1080) # 해상도 설정 (일부 사이트는 이게 없으면 접속을 막아요)
+    error_msg = ""
     
     try:
-        print("모나 페이지 접속 시도...")
+        driver.set_page_load_timeout(30)
+        driver.set_window_size(1920, 1080)
+        
         driver.get("https://mobilemona.co.kr/view/plan/rate_plan.aspx")
         
-        # 2. 로딩 대기 강화
-        time.sleep(10) # 모나는 데이터가 그려지는 데 시간이 좀 더 필요할 수 있습니다.
+        # 1. 페이지가 로딩될 때까지 대기
+        wait = WebDriverWait(driver, 20)
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "pb-plan-item")))
         
-        # 페이지 소스 확인
         soup = BeautifulSoup(driver.page_source, 'html.parser')
         cards = soup.select('.pb-plan-item')
         
         if not cards:
-            print("데이터를 찾지 못했습니다. 페이지가 로딩되지 않았을 수 있습니다.")
-            return []
+            return [], "데이터를 찾을 수 없음 (페이지 구조 변경 또는 로딩 실패)"
 
         for card in cards:
             try:
-                # ... 기존 파싱 로직 ...
                 name = card.select_one('.pb-plan-item_name').text.strip()
                 net_type = card.select_one('.netdiv').text.strip() if card.select_one('.netdiv') else "LTE"
                 
@@ -93,27 +54,19 @@ def run_mona():
                     'LG', net_type, name, price, period, orig_price, data_final, qos, voice, letter
                 ])
             except Exception as e:
-                print(f"카드 파싱 중 오류: {e}")
                 continue
                 
     except Exception as e:
-        print(f"사이트 접속 오류: {e}")
+        error_msg = str(e)
     finally:
         driver.quit()
-    return result_data
-
-if __name__ == "__main__":
-    result_data = run_mona()
-    
-    if result_data:
-        current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"mona_{current_time}.csv"
         
-        header = ["통신망", "데이터구분", "요금제명", "가격", "할인기간", "할인후가격", "데이터(GB)", "QoS(Mbps)", "통화(분)", "문자(건)"]
-        with open(filename, 'w', encoding='utf-8-sig', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(header)
-            writer.writerows(result_data)
-        print(f"작업 완료! {len(result_data)}개의 요금제가 [{filename}]으로 저장되었습니다.")
-    else:
-        print("데이터를 찾지 못했습니다.")
+    return result_data, error_msg
+
+# 로컬에서 테스트할 때만 실행
+if __name__ == "__main__":
+    data, err = run_mona()
+    if err:
+        print(f"오류 발생: {err}")
+    elif data:
+        print(f"{len(data)}개 데이터 수집 완료")

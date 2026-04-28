@@ -33,7 +33,7 @@ with col1:
                     st.success(f"{len(data)}개 발견!")
                     # 다운로드 버튼에도 key를 명확히 부여
                     get_csv_download_button(data, "umobile")
-                else: st.error("실패")
+                else: st.error("제작자에게 문의하세요")
 
 # KG모바일 섹션
 with col2:
@@ -45,7 +45,7 @@ with col2:
                 if data:
                     st.success(f"{len(data)}개 발견!")
                     get_csv_download_button(data, "kgmobile")
-                else: st.error("실패")
+                else: st.error("제작자에게 문의하세요")
 
 # 모나 섹션
 with col3:
@@ -57,4 +57,4 @@ with col3:
                 if data:
                     st.success(f"{len(data)}개 발견!")
                     get_csv_download_button(data, "mona")
-                else: st.error("실패")
+                else: st.error("제작자에게 문의하세요")
