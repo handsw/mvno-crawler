@@ -46,41 +46,58 @@ def clean_numeric(text):
 def run_mona():
     driver = get_driver()
     result_data = []
+    
+    # 1. 사이트 접속을 더 튼튼하게 만들기 위한 설정
+    driver.set_page_load_timeout(30) # 30초 내에 안 뜨면 오류 발생하게 함
+    driver.set_window_size(1920, 1080) # 해상도 설정 (일부 사이트는 이게 없으면 접속을 막아요)
+    
     try:
+        print("모나 페이지 접속 시도...")
         driver.get("https://mobilemona.co.kr/view/plan/rate_plan.aspx")
-        time.sleep(7)
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
         
+        # 2. 로딩 대기 강화
+        time.sleep(10) # 모나는 데이터가 그려지는 데 시간이 좀 더 필요할 수 있습니다.
+        
+        # 페이지 소스 확인
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
         cards = soup.select('.pb-plan-item')
-        print(f"찾은 요금제 개수: {len(cards)}개")
+        
+        if not cards:
+            print("데이터를 찾지 못했습니다. 페이지가 로딩되지 않았을 수 있습니다.")
+            return []
 
         for card in cards:
-            # try-except를 잠시 제거해서 에러가 나면 바로 뜨게 함 (디버깅용)
-            name = card.select_one('.pb-plan-item_name').text.strip()
-            net_type = card.select_one('.netdiv').text.strip() if card.select_one('.netdiv') else "LTE"
-            
-            # 데이터 및 QoS
-            data_text = card.select_one('.pb-plan-data_name.data').text.strip() if card.select_one('.pb-plan-data_name.data') else ""
-            qos_match = re.search(r'(\d+)\s*(mbps|kbps)', data_text, re.IGNORECASE)
-            qos = qos_match.group(1) + ("Kbps" if qos_match.group(2).lower() == 'kbps' else "") if qos_match else "-"
-            
-            data_raw = re.sub(r'\+\s*\d+\s*(mbps|kbps)', '', data_text, flags=re.IGNORECASE)
-            data_final = calculate_data(data_raw)
-            
-            # 가격
-            price_el = card.select_one('.pb-text-vat_bold.discount')
-            price = price_el.get('data-value') if price_el else "0"
-            orig_el = card.select_one('.pb-is-linethrough')
-            orig_price = orig_el.text.replace('월', '').replace(',', '').replace('원', '').strip() if orig_el else price
-            
-            period = card.select_one('.event-period').text.strip() if card.select_one('.event-period') else "정보없음"
-            voice = clean_numeric(card.select_one('.pb-plan-data_name.voice').text.strip() if card.select_one('.pb-plan-data_name.voice') else "기본제공")
-            letter = clean_numeric(card.select_one('.pb-plan-data_name.letter').text.strip() if card.select_one('.pb-plan-data_name.letter') else "기본제공")
-            
-            result_data.append([
-                "LG", net_type, name, price, period, orig_price, data_final, qos, voice, letter
-            ])
-            
+            try:
+                # ... 기존 파싱 로직 ...
+                name = card.select_one('.pb-plan-item_name').text.strip()
+                net_type = card.select_one('.netdiv').text.strip() if card.select_one('.netdiv') else "LTE"
+                
+                # 데이터 파싱
+                data_text = card.select_one('.pb-plan-data_name.data').text.strip() if card.select_one('.pb-plan-data_name.data') else ""
+                qos_match = re.search(r'(\d+)\s*(mbps|kbps)', data_text, re.IGNORECASE)
+                qos = qos_match.group(1) + ("Kbps" if qos_match.group(2).lower() == 'kbps' else "") if qos_match else "-"
+                
+                data_raw = re.sub(r'\+\s*\d+\s*(mbps|kbps)', '', data_text, flags=re.IGNORECASE)
+                data_final = calculate_data(data_raw)
+                
+                price_el = card.select_one('.pb-text-vat_bold.discount')
+                price = price_el.get('data-value') if price_el else "0"
+                orig_el = card.select_one('.pb-is-linethrough')
+                orig_price = orig_el.text.replace('월', '').replace(',', '').replace('원', '').strip() if orig_el else price
+                
+                period = card.select_one('.event-period').text.strip() if card.select_one('.event-period') else "정보없음"
+                voice = clean_numeric(card.select_one('.pb-plan-data_name.voice').text.strip() if card.select_one('.pb-plan-data_name.voice') else "기본제공")
+                letter = clean_numeric(card.select_one('.pb-plan-data_name.letter').text.strip() if card.select_one('.pb-plan-data_name.letter') else "기본제공")
+                
+                result_data.append([
+                    'LG', net_type, name, price, period, orig_price, data_final, qos, voice, letter
+                ])
+            except Exception as e:
+                print(f"카드 파싱 중 오류: {e}")
+                continue
+                
+    except Exception as e:
+        print(f"사이트 접속 오류: {e}")
     finally:
         driver.quit()
     return result_data
