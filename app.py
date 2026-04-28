@@ -51,14 +51,22 @@ with col2:
 with col3:
     with st.container(border=True):
         st.subheader("🟡 모나(Mona)")
-        if st.button("크롤링 시작", key="btn_mona"):
-            with st.spinner('수집 중...'):
-                data, error = mona.run_mona() # 함수가 이제 2개를 줍니다
-                
-                if error:
-                    st.error(f"실패: {error}")
-                elif data:
-                    st.success(f"{len(data)}개 요금제 발견!")
-                    get_csv_download_button(data, "mona")
-                else:
-                    st.warning("데이터를 하나도 찾지 못했습니다.")
+        
+        # 1. 제한 메시지 출력
+        st.warning("⚠️ 보안 정책으로 인해 실시간 데이터 수집이 제한되었습니다.")
+        st.info("업데이트가 필요하면 제작자에게 문의해주세요.")
+        
+        # 2. 데이터 파일 읽기 (로컬에서 업로드한 mona.csv)
+        try:
+            import pandas as pd
+            df = pd.read_csv('mona.csv')
+            
+            # (선택) 마지막 업데이트 날짜 표시
+            st.caption("마지막 업데이트: 2026-04-28 (예시)")
+            
+            st.dataframe(df, use_container_width=True)
+            
+            with open('mona.csv', 'rb') as f:
+                st.download_button("📥 데이터 다운로드", f, "mona.csv", mime="text/csv", use_container_width=True)
+        except FileNotFoundError:
+            st.error("데이터 파일이 준비되지 않았습니다.")
