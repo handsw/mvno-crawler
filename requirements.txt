@@ -1,0 +1,10 @@
+<<<<<<< HEAD
+streamlit
+selenium
+beautifulsoup4
+=======
+streamlit
+selenium
+beautifulsoup4
+>>>>>>> 753bb5b643b49b0a22315f0b2975500e9ef8fd46
+webdriver-manager
