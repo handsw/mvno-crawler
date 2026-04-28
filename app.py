@@ -12,8 +12,11 @@ with col1:
     st.title("타사 MVNO 요금제 수집")
 
 with col2:
-    st.markdown("---") # 구분선(선택사항)
-    st.caption("제작자 : MVNO팀 / 손석우")
+    st.markdown("""
+    <div style="text-align: right;">
+        <small>제작자 : MVNO팀 / 손석우</small><br>
+    </div>
+    """, unsafe_allow_html=True)
 st.write("각 통신사별로 '크롤링 시작' 버튼을 누르면 최신 요금제를 가져옵니다.")
 
 # CSV 다운로드 공통 함수
