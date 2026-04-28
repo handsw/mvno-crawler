@@ -2,7 +2,7 @@ import streamlit as st
 import io
 import csv
 import os
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from crawler import mona, umobile, kgmobile 
 
 # 페이지 설정
@@ -61,13 +61,15 @@ with col3:
         try:
             file_path = 'mona.csv'
             
-            # 1. 파일 수정 시간 자동 가져오기
-            mtime = os.path.getmtime(file_path) # 파일 수정 시간(Unix timestamp) 확인
-            last_updated = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M') # 읽기 좋게 변환
+            # 1. 한국 시간대(KST) 설정 (UTC + 9시간)
+            KST = timezone(timedelta(hours=9))
+            
+            # 2. 파일 수정 시간을 KST 기준으로 가져오기
+            mtime = os.path.getmtime(file_path)
+            last_updated = datetime.fromtimestamp(mtime, tz=KST).strftime('%Y-%m-%d %H:%M')
             
             st.caption(f"마지막 업데이트: {last_updated}")
             
-            # 2. 미리보기(st.dataframe) 코드 삭제 후 다운로드 버튼만 유지
             with open(file_path, 'rb') as f:
                 st.download_button(
                     label="📥 최신 데이터 다운로드", 
