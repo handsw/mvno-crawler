@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from scraper_utils import get_driver, clean_numeric, save_csv, calculate_data, get_filename
+from crawler.scraper_utils import get_driver, clean_numeric, save_csv, calculate_data, get_filename
 
 def parse_data_spec(raw_data):
     """KG모바일 전용 데이터 제공량 표준화 함수"""

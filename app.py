@@ -8,7 +8,7 @@ from datetime import datetime
 from crawler import mona, umobile, kgmobile 
 
 st.set_page_config(page_title="MVNO 요금제 수집기", page_icon="📱")
-st.title("📱 알뜰폰 요금제 통합 수집기")
+st.title("타사 MVNO 요금제 크롤링")
 
 # 다운로드 버튼을 위한 공통 함수
 def get_csv_download_button(data, filename_prefix):
