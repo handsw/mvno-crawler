@@ -13,20 +13,26 @@ def get_filename(company_name):
 
 def get_driver():
     options = Options()
-    # 서버 실행을 위한 필수 옵션들
-    options.add_argument('--headless')
+    # 'headless=new'가 기존보다 차단 확률이 낮습니다.
+    options.add_argument('--headless=new') 
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
-    options.add_argument('--no-zygote') 
-    options.add_argument('--single-process')
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36')
     
-    # [핵심] Streamlit 서버 환경의 크롬 위치를 직접 지정
+    # [중요] 에러 로그에 찍힌 버전과 똑같은 User-Agent 사용
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36')
+    
+    # 로봇 탐지 회피 옵션
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
+    
     options.binary_location = "/usr/bin/chromium"
     
-    # 드라이버 매니저 없이 바로 실행 (시스템 드라이버 사용)
     driver = webdriver.Chrome(options=options)
+    
+    # 브라우저가 로봇임을 숨기는 자바스크립트 실행
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     return driver
 
 def clean_numeric(text):
